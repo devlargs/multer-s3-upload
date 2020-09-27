@@ -2,6 +2,7 @@ const gulp = require("gulp");
 const eb = require("gulp-beanstalk-deploy");
 const Sequence = require("sequence").Sequence;
 const fs = require("fs");
+const archiver = require("archiver");
 
 const filename = "archive.zip";
 
@@ -9,9 +10,8 @@ gulp.task("deploy", function (cb) {
   Sequence.create()
     .then((next) => {
       if (fs.existsSync(filename)) {
-        console.log("removing zip");
-
         try {
+          console.log("Removing ZIP file");
           fs.unlinkSync(filename);
           next();
         } catch (err) {
@@ -21,14 +21,30 @@ gulp.task("deploy", function (cb) {
         next();
       }
     })
-    .then((next) => {
-      console.log("creating new zip");
-      next();
-    })
-    .then((next) => {
-      console.log("deploying app");
-      cb();
+    .then(async (next) => {
+      const archive = archiver("zip");
+      const stream = fs.createWriteStream(filename);
+      console.log("Compressing the application");
 
+      const bool = await new Promise((resolve, reject) => {
+        archive
+          .directory("./", false)
+          .on("error", (err) => reject(err))
+          .pipe(stream);
+
+        stream.on("close", () => resolve(true));
+        archive.finalize();
+      });
+
+      if (bool) {
+        console.log("Successfully compressed app");
+        next();
+      } else {
+        console.log("An error occurred while compressing the app");
+      }
+    })
+    .then(() => {
+      console.log("Deploying app to elastic beanstalk");
       const {
         AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY,
