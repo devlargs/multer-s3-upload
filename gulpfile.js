@@ -61,7 +61,7 @@ gulp.task("deploy", function (cb) {
           region: AWS_REGION,
           applicationName: APPLICATION_NAME,
           environmentName: APPLICATION_ENVIRONMENT_NAME,
-          versionLabel: "0.0.1",
+          versionLabel: `0.0.${+new Date()}`,
           sourceBundle: filename,
           s3Bucket: {
             bucket: AWS_S3_BUCKET,
