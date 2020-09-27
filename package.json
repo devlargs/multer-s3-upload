@@ -4,7 +4,8 @@
   "private": true,
   "author": "Ralph Largo",
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "deploy": "gulp deploy"
   },
   "dependencies": {
     "archiver": "^5.0.2",
